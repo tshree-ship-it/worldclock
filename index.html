@@ -10,264 +10,119 @@
 <meta name="theme-color" content="#1c1c1a" media="(prefers-color-scheme: dark)">
 <title>Timezone Clock</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #ffffff;
-    --bg2: #f5f4f1;
-    --bg3: #eeedea;
-    --text: #1a1a18;
-    --text2: #6b6a66;
-    --text3: #9e9d99;
-    --border: rgba(0,0,0,0.12);
-    --border2: rgba(0,0,0,0.25);
-    --accent: #D85A30;
-    --blue: #378ADD;
-    --radius: 16px;
-    --radius-sm: 10px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;--bg2:#f5f4f1;--bg3:#eeedea;
+  --text:#1a1a18;--text2:#6b6a66;--text3:#9e9d99;
+  --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.25);
+  --accent:#D85A30;--blue:#378ADD;
+  --radius:16px;--radius-sm:10px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+    --text:#f0ede6;--text2:#9e9d99;--text3:#6b6a66;
+    --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.22);
   }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg3);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;align-items:center;}
+header{width:100%;padding:1.2rem 1.5rem 0.5rem;text-align:center;}
+header h1{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.1em;}
+.container{width:100%;max-width:680px;padding:0.5rem 1rem 2rem;display:flex;flex-direction:column;gap:1rem;}
+.clocks-row{display:grid;grid-template-columns:1fr auto 1fr;gap:0.75rem;align-items:start;}
+.clock-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:1.1rem 0.9rem;display:flex;flex-direction:column;align-items:center;}
+.clock-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:.85rem;}
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a;
-      --bg2: #252523;
-      --bg3: #2e2e2b;
-      --text: #f0ede6;
-      --text2: #9e9d99;
-      --text3: #6b6a66;
-      --border: rgba(255,255,255,0.1);
-      --border2: rgba(255,255,255,0.22);
-    }
-  }
+svg.face circle.bg{fill:var(--bg2);stroke:var(--border2);stroke-width:1.5;}
+svg.face circle.bg.ring{stroke:var(--blue);stroke-width:2.5;}
+svg.face .tick{stroke:var(--border2);stroke-width:1;}
+svg.face .tick-major{stroke:var(--text3);stroke-width:2;}
+svg.face .hr-num{fill:var(--text2);font-size:9px;font-family:inherit;text-anchor:middle;dominant-baseline:middle;}
+svg.face line.hour{stroke:var(--text);stroke-width:4;stroke-linecap:round;}
+svg.face line.minute{stroke:var(--text);stroke-width:2.5;stroke-linecap:round;}
+svg.face line.second{stroke:var(--accent);stroke-width:1.5;stroke-linecap:round;}
+svg.face circle.dot{fill:var(--text);}
+svg.face circle.dot-inner{fill:var(--bg2);}
+svg.draggable{cursor:grab;touch-action:none;}
+svg.draggable:active{cursor:grabbing;}
+.hint{font-size:10px;color:var(--text3);margin-top:4px;}
 
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg3);
-    color: var(--text);
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+/* Wheels */
+.time-wheels{display:flex;align-items:flex-start;gap:3px;margin-top:.75rem;}
+.wheel-col{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.wheel-sep{font-size:18px;font-weight:400;color:var(--text2);margin-top:10px;}
+.wheel-label{font-size:9px;color:var(--text3);letter-spacing:.05em;}
+.wheel{width:46px;height:72px;overflow:hidden;position:relative;border:0.5px solid var(--border);border-radius:8px;background:var(--bg2);}
+.wheel-inner{position:absolute;left:0;right:0;top:0;}
+.wi{height:24px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);font-variant-numeric:tabular-nums;font-weight:400;}
+.wi.active{font-size:15px;font-weight:500;color:var(--text);}
+.wheel-fade-top,.wheel-fade-bot{position:absolute;left:0;right:0;height:24px;pointer-events:none;z-index:2;}
+.wheel-fade-top{top:0;background:linear-gradient(to bottom,var(--bg2) 30%,transparent);}
+.wheel-fade-bot{bottom:0;background:linear-gradient(to top,var(--bg2) 30%,transparent);}
+.wheel-highlight{position:absolute;left:4px;right:4px;top:24px;height:24px;border:1px solid var(--border2);border-radius:5px;pointer-events:none;z-index:1;}
 
-  header {
-    width: 100%;
-    padding: 1.2rem 1.5rem 0.5rem;
-    text-align: center;
-  }
+.date-display{font-size:11px;color:var(--text2);margin-top:5px;}
+select{width:100%;margin-top:.85rem;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:7px 9px;font-size:12px;color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer;}
 
-  header h1 {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
+.divider{display:flex;flex-direction:column;align-items:center;gap:5px;padding-top:1.2rem;}
+.diff-badge{background:var(--bg);border:0.5px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.diff-label{font-size:10px;color:var(--text3);letter-spacing:.05em;}
+.arrow{font-size:14px;color:var(--text3);}
 
-  .container {
-    width: 100%;
-    max-width: 680px;
-    padding: 0.5rem 1rem 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:0.5px solid var(--border);border-radius:20px;padding:5px 14px;font-size:11px;color:var(--text2);cursor:pointer;user-select:none;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#3b8a3e;animation:pulse 2s infinite;}
+.live-dot.off{background:var(--text3);animation:none;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-  .clocks-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 0.75rem;
-    align-items: start;
-  }
-
-  .clock-card {
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .clock-label {
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 1rem;
-  }
-
-  svg.face circle.bg { fill: var(--bg2); stroke: var(--border2); stroke-width: 1.5; }
-  svg.face circle.bg.ring { stroke: var(--blue); stroke-width: 2.5; }
-  svg.face .tick { stroke: var(--border2); stroke-width: 1; }
-  svg.face .tick-major { stroke: var(--text3); stroke-width: 2; }
-  svg.face .hr-num { fill: var(--text2); font-size: 9px; font-family: inherit; text-anchor: middle; dominant-baseline: middle; }
-  svg.face line.hour { stroke: var(--text); stroke-width: 4; stroke-linecap: round; }
-  svg.face line.minute { stroke: var(--text); stroke-width: 2.5; stroke-linecap: round; }
-  svg.face line.second { stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; }
-  svg.face circle.dot { fill: var(--text); }
-  svg.face circle.dot-inner { fill: var(--bg2); }
-  svg.interactive { cursor: grab; touch-action: none; }
-  svg.interactive:active { cursor: grabbing; }
-
-  .hint { font-size: 10px; color: var(--text3); margin-top: 5px; }
-
-  .time-big {
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text);
-    margin-top: 0.65rem;
-    letter-spacing: 0.02em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .date-small { font-size: 11px; color: var(--text2); margin-top: 3px; }
-
-  .sliders { width: 100%; margin-top: 1rem; display: flex; flex-direction: column; gap: 9px; }
-  .slider-row { display: flex; align-items: center; gap: 8px; }
-  .slider-unit { font-size: 10px; color: var(--text3); width: 22px; letter-spacing: 0.05em; }
-  .slider-val { font-size: 13px; font-weight: 500; color: var(--text); width: 26px; text-align: right; font-variant-numeric: tabular-nums; }
-  .swipe-track { flex: 1; height: 36px; position: relative; cursor: ew-resize; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
-  .track-bg { position: absolute; top: 50%; left: 0; right: 0; height: 4px; transform: translateY(-50%); background: var(--bg2); border-radius: 2px; border: 0.5px solid var(--border); }
-  .track-fill { position: absolute; top: 50%; left: 0; height: 4px; transform: translateY(-50%); background: var(--text); border-radius: 2px; }
-  .thumb { position: absolute; top: 50%; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 1.5px solid var(--text); transform: translate(-50%, -50%); box-shadow: 0 1px 4px rgba(0,0,0,.1); transition: transform .1s; }
-  .swipe-track:active .thumb { transform: translate(-50%, -50%) scale(1.2); }
-
-  select {
-    width: 100%;
-    margin-top: 1rem;
-    background: var(--bg2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 8px 10px;
-    font-size: 12px;
-    color: var(--text);
-    font-family: inherit;
-    outline: none;
-    -webkit-appearance: none;
-    appearance: none;
-    cursor: pointer;
-  }
-
-  .divider {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding-top: 1.5rem;
-  }
-
-  .diff-badge {
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text);
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .diff-label { font-size: 10px; color: var(--text3); letter-spacing: 0.05em; }
-  .arrow { font-size: 16px; color: var(--text3); }
-
-  .live-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 14px;
-    font-size: 11px;
-    color: var(--text2);
-    cursor: pointer;
-    user-select: none;
-    align-self: center;
-  }
-
-  .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #3b8a3e; animation: pulse 2s infinite; }
-  .live-dot.off { background: var(--text3); animation: none; }
-
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-  @media (max-width: 440px) {
-    .clocks-row { grid-template-columns: 1fr; }
-    .divider { flex-direction: row; padding-top: 0; justify-content: center; }
-    svg.face { width: 145px; height: 145px; }
-    .time-big { font-size: 20px; }
-  }
+@media(max-width:440px){
+  .clocks-row{grid-template-columns:1fr;}
+  .divider{flex-direction:row;padding-top:0;justify-content:center;}
+  svg.face{width:145px;height:145px;}
+}
 </style>
 </head>
 <body>
-
 <header><h1>World Clock</h1></header>
-
 <div class="container">
   <div class="clocks-row">
-
     <div class="clock-card">
       <div class="clock-label">Reference</div>
-      <svg id="svgL" class="face interactive" width="155" height="155" viewBox="0 0 160 160">
+      <svg id="svgL" class="face draggable" width="148" height="148" viewBox="0 0 160 160">
         <circle class="bg" id="bgL" cx="80" cy="80" r="74"/>
         <g id="tL"></g>
-        <line class="hour"   id="hL" x1="80" y1="80" x2="80" y2="44"/>
+        <line class="hour" id="hL" x1="80" y1="80" x2="80" y2="44"/>
         <line class="minute" id="mL" x1="80" y1="80" x2="80" y2="26"/>
         <line class="second" id="sL" x1="80" y1="92" x2="80" y2="20"/>
         <circle class="dot" cx="80" cy="80" r="4"/>
         <circle class="dot-inner" cx="80" cy="80" r="2"/>
       </svg>
-      <div class="hint">drag clock or use sliders</div>
-      <div class="time-big" id="timeL">00:00:00</div>
-      <div class="date-small" id="dateL"></div>
-      <div class="sliders">
-        <div class="slider-row">
-          <span class="slider-unit">hr</span>
-          <div class="swipe-track" id="trH"><div class="track-bg"></div><div class="track-fill" id="fillH"></div><div class="thumb" id="thumbH"></div></div>
-          <span class="slider-val" id="valH">00</span>
-        </div>
-        <div class="slider-row">
-          <span class="slider-unit">min</span>
-          <div class="swipe-track" id="trM"><div class="track-bg"></div><div class="track-fill" id="fillM"></div><div class="thumb" id="thumbM"></div></div>
-          <span class="slider-val" id="valM">00</span>
-        </div>
-        <div class="slider-row">
-          <span class="slider-unit">sec</span>
-          <div class="swipe-track" id="trS"><div class="track-bg"></div><div class="track-fill" id="fillS"></div><div class="thumb" id="thumbS"></div></div>
-          <span class="slider-val" id="valS">00</span>
-        </div>
-      </div>
+      <div class="hint">drag to set time</div>
+      <div class="time-wheels" id="wheelsL"></div>
+      <div class="date-display" id="dateL"></div>
       <select id="selL"></select>
     </div>
-
     <div class="divider">
       <div class="diff-label">diff</div>
-      <div class="diff-badge" id="diffBadge">0h</div>
-      <div class="arrow">&#8594;</div>
+      <div class="diff-badge" id="diffBadge">—</div>
+      <div class="arrow">&#8596;</div>
     </div>
-
     <div class="clock-card">
       <div class="clock-label">Target</div>
-      <svg class="face" width="155" height="155" viewBox="0 0 160 160">
-        <circle class="bg" cx="80" cy="80" r="74"/>
+      <svg id="svgR" class="face draggable" width="148" height="148" viewBox="0 0 160 160">
+        <circle class="bg" id="bgR" cx="80" cy="80" r="74"/>
         <g id="tR"></g>
-        <line class="hour"   id="hR" x1="80" y1="80" x2="80" y2="44"/>
+        <line class="hour" id="hR" x1="80" y1="80" x2="80" y2="44"/>
         <line class="minute" id="mR" x1="80" y1="80" x2="80" y2="26"/>
         <line class="second" id="sR" x1="80" y1="92" x2="80" y2="20"/>
         <circle class="dot" cx="80" cy="80" r="4"/>
         <circle class="dot-inner" cx="80" cy="80" r="2"/>
       </svg>
-      <div style="height:19px"></div>
-      <div class="time-big" id="timeR">00:00:00</div>
-      <div class="date-small" id="dateR"></div>
-      <select id="selR" style="margin-top:calc(1rem + 117px + 20px);"></select>
+      <div class="hint">drag to set time</div>
+      <div class="time-wheels" id="wheelsR"></div>
+      <div class="date-display" id="dateR"></div>
+      <select id="selR"></select>
     </div>
-
   </div>
-
   <div style="display:flex;justify-content:center;">
     <div class="live-badge" id="livePill">
       <div class="live-dot" id="liveDot"></div>
@@ -277,219 +132,250 @@
 </div>
 
 <script>
-const ZONES = [
-  ["Paris (CET/CEST)","Europe/Paris"],["London (GMT/BST)","Europe/London"],
-  ["New York (ET)","America/New_York"],["Los Angeles (PT)","America/Los_Angeles"],
-  ["Chicago (CT)","America/Chicago"],["Toronto (ET)","America/Toronto"],
-  ["Vancouver (PT)","America/Vancouver"],["Mexico City (CST)","America/Mexico_City"],
-  ["São Paulo (BRT)","America/Sao_Paulo"],["Buenos Aires (ART)","America/Argentina/Buenos_Aires"],
-  ["Bogotá (COT)","America/Bogota"],["Lima (PET)","America/Lima"],
-  ["Santiago (CLT)","America/Santiago"],["Reykjavik (GMT)","Atlantic/Reykjavik"],
-  ["Berlin (CET/CEST)","Europe/Berlin"],["Madrid (CET/CEST)","Europe/Madrid"],
-  ["Rome (CET/CEST)","Europe/Rome"],["Amsterdam (CET/CEST)","Europe/Amsterdam"],
-  ["Stockholm (CET/CEST)","Europe/Stockholm"],["Warsaw (CET/CEST)","Europe/Warsaw"],
-  ["Athens (EET/EEST)","Europe/Athens"],["Istanbul (TRT)","Europe/Istanbul"],
-  ["Moscow (MSK)","Europe/Moscow"],["Dubai (GST)","Asia/Dubai"],
-  ["Riyadh (AST)","Asia/Riyadh"],["Tehran (IRST)","Asia/Tehran"],
-  ["Karachi (PKT)","Asia/Karachi"],["Mumbai (IST)","Asia/Kolkata"],
-  ["Kathmandu (NPT)","Asia/Kathmandu"],["Dhaka (BST)","Asia/Dhaka"],
-  ["Colombo (SLST)","Asia/Colombo"],["Yangon (MMT)","Asia/Rangoon"],
-  ["Bangkok (ICT)","Asia/Bangkok"],["Singapore (SGT)","Asia/Singapore"],
-  ["Hong Kong (HKT)","Asia/Hong_Kong"],["Beijing (CST)","Asia/Shanghai"],
-  ["Tokyo (JST)","Asia/Tokyo"],["Seoul (KST)","Asia/Seoul"],
-  ["Jakarta (WIB)","Asia/Jakarta"],["Sydney (AEDT/AEST)","Australia/Sydney"],
-  ["Auckland (NZDT/NZST)","Pacific/Auckland"],["Honolulu (HST)","Pacific/Honolulu"],
-  ["Anchorage (AKST)","America/Anchorage"],["Denver (MT)","America/Denver"],
-  ["Phoenix (MST)","America/Phoenix"],["Lagos (WAT)","Africa/Lagos"],
-  ["Nairobi (EAT)","Africa/Nairobi"],["Cairo (EET)","Africa/Cairo"],
-  ["Casablanca (WET)","Africa/Casablanca"],["Johannesburg (SAST)","Africa/Johannesburg"],
-];
+const ZONES=[["Paris (CET/CEST)","Europe/Paris"],["London (GMT/BST)","Europe/London"],["New York (ET)","America/New_York"],["Los Angeles (PT)","America/Los_Angeles"],["Chicago (CT)","America/Chicago"],["Toronto (ET)","America/Toronto"],["Vancouver (PT)","America/Vancouver"],["Mexico City (CST)","America/Mexico_City"],["São Paulo (BRT)","America/Sao_Paulo"],["Buenos Aires (ART)","America/Argentina/Buenos_Aires"],["Bogotá (COT)","America/Bogota"],["Lima (PET)","America/Lima"],["Santiago (CLT)","America/Santiago"],["Reykjavik (GMT)","Atlantic/Reykjavik"],["Berlin (CET/CEST)","Europe/Berlin"],["Madrid (CET/CEST)","Europe/Madrid"],["Rome (CET/CEST)","Europe/Rome"],["Amsterdam (CET/CEST)","Europe/Amsterdam"],["Stockholm (CET/CEST)","Europe/Stockholm"],["Warsaw (CET/CEST)","Europe/Warsaw"],["Athens (EET/EEST)","Europe/Athens"],["Istanbul (TRT)","Europe/Istanbul"],["Moscow (MSK)","Europe/Moscow"],["Dubai (GST)","Asia/Dubai"],["Riyadh (AST)","Asia/Riyadh"],["Tehran (IRST)","Asia/Tehran"],["Karachi (PKT)","Asia/Karachi"],["Mumbai (IST)","Asia/Kolkata"],["Kathmandu (NPT)","Asia/Kathmandu"],["Dhaka (BST)","Asia/Dhaka"],["Colombo (SLST)","Asia/Colombo"],["Yangon (MMT)","Asia/Rangoon"],["Bangkok (ICT)","Asia/Bangkok"],["Singapore (SGT)","Asia/Singapore"],["Hong Kong (HKT)","Asia/Hong_Kong"],["Beijing (CST)","Asia/Shanghai"],["Tokyo (JST)","Asia/Tokyo"],["Seoul (KST)","Asia/Seoul"],["Jakarta (WIB)","Asia/Jakarta"],["Sydney (AEDT/AEST)","Australia/Sydney"],["Auckland (NZDT/NZST)","Pacific/Auckland"],["Honolulu (HST)","Pacific/Honolulu"],["Anchorage (AKST)","America/Anchorage"],["Denver (MT)","America/Denver"],["Phoenix (MST)","America/Phoenix"],["Lagos (WAT)","Africa/Lagos"],["Nairobi (EAT)","Africa/Nairobi"],["Cairo (EET)","Africa/Cairo"],["Casablanca (WET)","Africa/Casablanca"],["Johannesburg (SAST)","Africa/Johannesburg"]];
 
-const selL = document.getElementById('selL'), selR = document.getElementById('selR');
-ZONES.forEach(([label, tz]) => {
-  const a = new Option(label, tz); if (tz === 'Europe/Paris') a.selected = true;
-  const b = new Option(label, tz); if (tz === 'America/New_York') b.selected = true;
-  selL.add(a); selR.add(b);
+const userTz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+const selL=document.getElementById('selL'),selR=document.getElementById('selR');
+let defaultL='Europe/Paris',defaultR='America/New_York';
+ZONES.forEach(([,tz])=>{if(tz===userTz)defaultL=tz;});
+ZONES.forEach(([label,tz])=>{
+  const a=new Option(label,tz);if(tz===defaultL)a.selected=true;
+  const b=new Option(label,tz);if(tz===defaultR)b.selected=true;
+  selL.add(a);selR.add(b);
 });
 
-const ns = 'http://www.w3.org/2000/svg';
-function buildTicks(gId) {
-  const g = document.getElementById(gId); g.innerHTML = '';
-  for (let i = 0; i < 60; i++) {
-    const a = (i / 60) * 2 * Math.PI - Math.PI / 2, major = i % 5 === 0;
-    const r1 = 74, r2 = major ? 62 : 68;
-    const ln = document.createElementNS(ns, 'line');
-    ln.setAttribute('x1', 80 + r1 * Math.cos(a)); ln.setAttribute('y1', 80 + r1 * Math.sin(a));
-    ln.setAttribute('x2', 80 + r2 * Math.cos(a)); ln.setAttribute('y2', 80 + r2 * Math.sin(a));
-    ln.setAttribute('class', major ? 'tick-major' : 'tick'); g.appendChild(ln);
-    if (major) {
-      const hr = i === 0 ? 12 : i / 5, lr = 53;
-      const tx = document.createElementNS(ns, 'text');
-      tx.setAttribute('x', 80 + lr * Math.cos(a)); tx.setAttribute('y', 80 + lr * Math.sin(a));
-      tx.setAttribute('class', 'hr-num'); tx.textContent = hr; g.appendChild(tx);
+const ns='http://www.w3.org/2000/svg';
+function buildTicks(gId){
+  const g=document.getElementById(gId);g.innerHTML='';
+  for(let i=0;i<60;i++){
+    const a=(i/60)*2*Math.PI-Math.PI/2,major=i%5===0;
+    const r1=74,r2=major?62:68;
+    const ln=document.createElementNS(ns,'line');
+    ln.setAttribute('x1',80+r1*Math.cos(a));ln.setAttribute('y1',80+r1*Math.sin(a));
+    ln.setAttribute('x2',80+r2*Math.cos(a));ln.setAttribute('y2',80+r2*Math.sin(a));
+    ln.setAttribute('class',major?'tick-major':'tick');g.appendChild(ln);
+    if(major){
+      const hr=i===0?12:i/5,lr=53;
+      const tx=document.createElementNS(ns,'text');
+      tx.setAttribute('x',80+lr*Math.cos(a));tx.setAttribute('y',80+lr*Math.sin(a));
+      tx.setAttribute('class','hr-num');tx.textContent=hr;g.appendChild(tx);
     }
   }
 }
-buildTicks('tL'); buildTicks('tR');
+buildTicks('tL');buildTicks('tR');
 
-function rotate(id, deg) { document.getElementById(id).setAttribute('transform', `rotate(${deg},80,80)`); }
-function pad(n) { return String(n).padStart(2, '0'); }
-
-function tzParts(ts, tz) {
-  const p = {};
-  new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false })
-    .formatToParts(new Date(ts)).forEach(({ type, value }) => p[type] = parseInt(value));
-  p.hour = p.hour % 24; return p;
+function rotate(id,deg){document.getElementById(id).setAttribute('transform',`rotate(${deg},80,80)`);}
+function pad(n){return String(n).padStart(2,'0');}
+function tzParts(ts,tz){
+  const p={};
+  new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
+    .formatToParts(new Date(ts)).forEach(({type,value})=>p[type]=parseInt(value));
+  p.hour=p.hour%24;return p;
+}
+function fmtDate(ts,tz){
+  return new Intl.DateTimeFormat('en-GB',{timeZone:tz,weekday:'short',day:'numeric',month:'short'}).format(new Date(ts));
+}
+function setHands(side,h,m,s){
+  rotate('h'+side,((h%12)/12)*360+(m/60)*30);
+  rotate('m'+side,(m/60)*360+(s/60)*6);
+  rotate('s'+side,(s/60)*360);
+}
+function getUtcOffsetMinutes(ts,tz){
+  const d=new Date(ts),parts={};
+  new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})
+    .formatToParts(d).forEach(({type,value})=>parts[type]=value);
+  const lu=Date.UTC(parseInt(parts.year),parseInt(parts.month)-1,parseInt(parts.day),parseInt(parts.hour)%24,parseInt(parts.minute),parseInt(parts.second));
+  return Math.round((lu-d.getTime())/60000);
+}
+function calcDiff(ts){
+  const offL=getUtcOffsetMinutes(ts,selL.value),offR=getUtcOffsetMinutes(ts,selR.value);
+  const diff=offR-offL,sign=diff>=0?'+':'';
+  const ah=Math.floor(Math.abs(diff)/60),am=Math.abs(diff)%60;
+  return am===0?`${sign}${diff>=0?ah:-ah}h`:`${sign}${diff>=0?'':'-'}${ah}h ${am}m`;
 }
 
-function fmtDate(ts, tz) {
-  return new Intl.DateTimeFormat('en-GB', { timeZone: tz, weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(ts));
+let currentTs=Date.now(),isLive=true;
+
+// ---- Wheel engine ----
+const IH=24;
+const WS={};
+
+function makeWheel(container,side,unit){
+  const max=unit==='H'?23:59;
+  const col=document.createElement('div');col.className='wheel-col';
+  if(container.children.length>0){
+    const sep=document.createElement('div');sep.className='wheel-sep';sep.textContent=':';container.appendChild(sep);
+  }
+  const wEl=document.createElement('div');wEl.className='wheel';
+  wEl.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+  const inner=document.createElement('div');inner.className='wheel-inner';
+  const pad1=document.createElement('div');pad1.className='wi';inner.appendChild(pad1);
+  for(let v=0;v<=max;v++){
+    const el=document.createElement('div');el.className='wi';el.textContent=pad(v);inner.appendChild(el);
+  }
+  const pad2=document.createElement('div');pad2.className='wi';inner.appendChild(pad2);
+  const highlight=document.createElement('div');highlight.className='wheel-highlight';
+  const fadeT=document.createElement('div');fadeT.className='wheel-fade-top';
+  const fadeB=document.createElement('div');fadeB.className='wheel-fade-bot';
+  wEl.appendChild(inner);wEl.appendChild(highlight);wEl.appendChild(fadeT);wEl.appendChild(fadeB);
+  const lbl=document.createElement('div');lbl.className='wheel-label';
+  lbl.textContent=unit==='H'?'hr':unit==='M'?'min':'sec';
+  col.appendChild(wEl);col.appendChild(lbl);container.appendChild(col);
+  const key=side+unit;
+  WS[key]={el:wEl,inner,max,val:0,raw:0,side,unit};
+  attachWheelEvents(key);
 }
 
-function setHands(side, h, m, s) {
-  rotate('h' + side, ((h % 12) / 12) * 360 + (m / 60) * 30);
-  rotate('m' + side, (m / 60) * 360 + (s / 60) * 6);
-  rotate('s' + side, (s / 60) * 360);
+function buildWheels(containerId,side){
+  const c=document.getElementById(containerId);c.innerHTML='';
+  ['H','M','S'].forEach(unit=>makeWheel(c,side,unit));
 }
 
-// Compute true UTC offset in minutes for a timezone at a given timestamp.
-// Correctly handles fractional offsets (India +5:30, Nepal +5:45, Iran +3:30 etc.)
-// and DST transitions automatically via the browser's IANA timezone database.
-function getUtcOffsetMinutes(ts, tz) {
-  const d = new Date(ts);
-  const parts = {};
-  new Intl.DateTimeFormat('en-US', {
-    timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-  }).formatToParts(d).forEach(({ type, value }) => parts[type] = value);
-  const localAsUtc = Date.UTC(
-    parseInt(parts.year), parseInt(parts.month) - 1, parseInt(parts.day),
-    parseInt(parts.hour) % 24, parseInt(parts.minute), parseInt(parts.second)
-  );
-  return Math.round((localAsUtc - d.getTime()) / 60000);
+function positionWheel(key,v,animate){
+  const w=WS[key];
+  v=Math.max(0,Math.min(w.max,v));
+  w.inner.style.transition=animate?'transform .18s cubic-bezier(.25,1,.5,1)':'none';
+  w.inner.style.transform=`translateY(${-v*IH}px)`;
+  Array.from(w.inner.children).forEach((el,i)=>el.classList.toggle('active',i===Math.round(v)+1));
+  w.val=Math.round(v);w.raw=v;
 }
 
-function calcDiff(ts) {
-  const offL = getUtcOffsetMinutes(ts, selL.value);
-  const offR = getUtcOffsetMinutes(ts, selR.value);
-  const diff = offR - offL;
-  const sign = diff >= 0 ? '+' : '';
-  const ah = Math.floor(Math.abs(diff) / 60), am = Math.abs(diff) % 60;
-  return am === 0 ? `${sign}${diff >= 0 ? ah : -ah}h` : `${sign}${diff >= 0 ? '' : '-'}${ah}h ${am}m`;
+function snapWheel(key,v){
+  const rounded=Math.max(0,Math.min(WS[key].max,Math.round(v)));
+  positionWheel(key,rounded,true);
+  WS[key].val=rounded;
+  commitWheels(WS[key].side);
 }
 
-let currentTs = Date.now(), isLive = true;
-
-const SL = {
-  H: { track: document.getElementById('trH'), fill: document.getElementById('fillH'), thumb: document.getElementById('thumbH'), val_el: document.getElementById('valH'), max: 23, val: 0 },
-  M: { track: document.getElementById('trM'), fill: document.getElementById('fillM'), thumb: document.getElementById('thumbM'), val_el: document.getElementById('valM'), max: 59, val: 0 },
-  S: { track: document.getElementById('trS'), fill: document.getElementById('fillS'), thumb: document.getElementById('thumbS'), val_el: document.getElementById('valS'), max: 59, val: 0 },
-};
-
-function setSlider(key, val, silent) {
-  const s = SL[key];
-  val = Math.max(0, Math.min(s.max, Math.round(val)));
-  s.val = val;
-  const pct = val / s.max;
-  s.fill.style.width = (pct * 100) + '%';
-  s.thumb.style.left = (pct * 100) + '%';
-  s.val_el.textContent = pad(val);
-  if (!silent) applyManual();
-}
-
-function syncSliders(h, m, s) { setSlider('H', h, true); setSlider('M', m, true); setSlider('S', s, true); }
-
-function goManual() {
-  isLive = false;
-  document.getElementById('liveDot').className = 'live-dot off';
-  document.getElementById('liveLabel').textContent = 'Paused';
-}
-
-function applyManual() {
+function commitWheels(side){
   goManual();
-  const tz = selL.value, d = new Date(currentTs), p = {};
-  new Intl.DateTimeFormat('en-US', { timeZone: tz, year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false })
-    .formatToParts(d).forEach(({ type, value }) => p[type] = parseInt(value));
-  const tzDelta = d - Date.UTC(p.year, p.month - 1, p.day, p.hour % 24, p.minute, p.second);
-  currentTs = Date.UTC(p.year, p.month - 1, p.day, SL.H.val, SL.M.val, SL.S.val) - tzDelta;
-  render(currentTs, true);
+  const tz=side==='L'?selL.value:selR.value;
+  const d=new Date(currentTs),p={};
+  new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
+    .formatToParts(d).forEach(({type,value})=>p[type]=parseInt(value));
+  const tzDelta=d.getTime()-Date.UTC(p.year,p.month-1,p.day,p.hour%24,p.minute,p.second);
+  currentTs=Date.UTC(p.year,p.month-1,p.day,WS[side+'H'].val,WS[side+'M'].val,WS[side+'S'].val)+tzDelta;
+  render(side);
 }
 
-function render(ts, skipSliders) {
-  const pL = tzParts(ts, selL.value), pR = tzParts(ts, selR.value);
-  setHands('L', pL.hour, pL.minute, pL.second);
-  setHands('R', pR.hour, pR.minute, pR.second);
-  document.getElementById('timeL').textContent = `${pad(pL.hour)}:${pad(pL.minute)}:${pad(pL.second)}`;
-  document.getElementById('timeR').textContent = `${pad(pR.hour)}:${pad(pR.minute)}:${pad(pR.second)}`;
-  document.getElementById('dateL').textContent = fmtDate(ts, selL.value);
-  document.getElementById('dateR').textContent = fmtDate(ts, selR.value);
-  document.getElementById('diffBadge').textContent = calcDiff(ts);
-  if (!skipSliders) syncSliders(pL.hour, pL.minute, pL.second);
+function attachWheelEvents(key){
+  const w=WS[key];
+  let startY=0,startRaw=0,lastY=0,vel=0,lastT=0,active=false,raf=null;
+  function getY(e){return(e.touches?e.touches[0]:e).clientY;}
+  function start(e){
+    active=true;
+    if(raf){cancelAnimationFrame(raf);raf=null;}
+    startY=lastY=getY(e);startRaw=w.raw;vel=0;lastT=Date.now();
+  }
+  function move(e){
+    if(!active)return;
+    const y=getY(e),now=Date.now(),dt=Math.max(now-lastT,1);
+    vel=(lastY-y)/dt;lastY=y;lastT=now;
+    positionWheel(key,Math.max(0,Math.min(w.max,startRaw+(startY-y)/IH)),false);
+  }
+  function end(){
+    if(!active)return;active=false;
+    const spd=vel*16;
+    if(Math.abs(spd)>0.5){
+      let v=w.raw,t0=Date.now();
+      function momentum(){
+        const elapsed=(Date.now()-t0)/16;
+        const decay=Math.pow(0.88,elapsed);
+        v=w.raw-(spd*(1-decay)/0.12);
+        v=Math.max(0,Math.min(w.max,v));
+        positionWheel(key,v,false);
+        if(Math.abs(spd)*decay>0.3)raf=requestAnimationFrame(momentum);
+        else snapWheel(key,v);
+      }
+      raf=requestAnimationFrame(momentum);
+    } else {
+      snapWheel(key,w.raw);
+    }
+  }
+  w.el.addEventListener('mousedown',e=>{start(e);e.preventDefault();});
+  w.el.addEventListener('touchstart',e=>{start(e);},{passive:false});
+  document.addEventListener('mousemove',move);
+  document.addEventListener('touchmove',e=>{if(active)move(e);},{passive:false});
+  document.addEventListener('mouseup',end);
+  document.addEventListener('touchend',end);
+  w.el.addEventListener('wheel',e=>{
+    e.preventDefault();
+    snapWheel(key,Math.max(0,Math.min(w.max,w.val+(e.deltaY>0?1:-1))));
+  },{passive:false});
 }
 
-function tick() { if (isLive) { currentTs = Date.now(); render(currentTs); } setTimeout(tick, 1000); }
+buildWheels('wheelsL','L');
+buildWheels('wheelsR','R');
+
+function syncWheels(side,h,m,s){
+  positionWheel(side+'H',h,false);
+  positionWheel(side+'M',m,false);
+  positionWheel(side+'S',s,false);
+}
+
+function goManual(){
+  isLive=false;
+  document.getElementById('liveDot').className='live-dot off';
+  document.getElementById('liveLabel').textContent='Paused';
+}
+
+function render(skipSide){
+  const pL=tzParts(currentTs,selL.value),pR=tzParts(currentTs,selR.value);
+  setHands('L',pL.hour,pL.minute,pL.second);
+  setHands('R',pR.hour,pR.minute,pR.second);
+  if(skipSide!=='L')syncWheels('L',pL.hour,pL.minute,pL.second);
+  if(skipSide!=='R')syncWheels('R',pR.hour,pR.minute,pR.second);
+  document.getElementById('dateL').textContent=fmtDate(currentTs,selL.value);
+  document.getElementById('dateR').textContent=fmtDate(currentTs,selR.value);
+  document.getElementById('diffBadge').textContent=calcDiff(currentTs);
+}
+
+function tick(){if(isLive){currentTs=Date.now();}render(null);setTimeout(tick,1000);}
 tick();
-
-selL.addEventListener('change', () => render(currentTs));
-selR.addEventListener('change', () => render(currentTs));
-
-document.getElementById('livePill').addEventListener('click', () => {
-  isLive = !isLive;
-  document.getElementById('liveDot').className = 'live-dot' + (isLive ? '' : ' off');
-  document.getElementById('liveLabel').textContent = isLive ? 'Live' : 'Paused';
-  if (isLive) { currentTs = Date.now(); render(currentTs); }
+selL.addEventListener('change',()=>render(null));
+selR.addEventListener('change',()=>render(null));
+document.getElementById('livePill').addEventListener('click',()=>{
+  isLive=!isLive;
+  document.getElementById('liveDot').className='live-dot'+(isLive?'':' off');
+  document.getElementById('liveLabel').textContent=isLive?'Live':'Paused';
+  if(isLive){currentTs=Date.now();render(null);}
 });
 
-function attachTrack(key) {
-  const s = SL[key]; let active = false;
-  function getX(e) { return e.touches ? e.touches[0].clientX : e.clientX; }
-  function valFromX(x) {
-    const r = s.track.getBoundingClientRect();
-    return Math.max(0, Math.min(1, (x - r.left) / r.width)) * s.max;
-  }
-  s.track.addEventListener('mousedown', e => { active = true; setSlider(key, valFromX(getX(e))); e.preventDefault(); });
-  s.track.addEventListener('touchstart', e => { active = true; setSlider(key, valFromX(getX(e))); }, { passive: true });
-  document.addEventListener('mousemove', e => { if (active) setSlider(key, valFromX(getX(e))); });
-  document.addEventListener('touchmove', e => { if (active) setSlider(key, valFromX(getX(e))); }, { passive: true });
-  document.addEventListener('mouseup', () => { active = false; });
-  document.addEventListener('touchend', () => { active = false; });
-  s.track.setAttribute('tabindex', '0');
-  s.track.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); setSlider(key, s.val + 1); }
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); setSlider(key, s.val - 1); }
-  });
+// ---- Clock drag ----
+function getClockAngle(e,svgEl){
+  const r=svgEl.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  const ex=(e.touches?e.touches[0]:e).clientX;
+  const ey=(e.touches?e.touches[0]:e).clientY;
+  let a=Math.atan2(ey-cy,ex-cx)*180/Math.PI+90;
+  if(a<0)a+=360;return a;
 }
-['H', 'M', 'S'].forEach(attachTrack);
-
-const svgL = document.getElementById('svgL'), bgL = document.getElementById('bgL');
-let clockDragging = false;
-
-function clockAngle(e) {
-  const r = svgL.getBoundingClientRect();
-  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-  const ex = e.touches ? e.touches[0].clientX : e.clientX;
-  const ey = e.touches ? e.touches[0].clientY : e.clientY;
-  let a = Math.atan2(ey - cy, ex - cx) * 180 / Math.PI + 90;
-  if (a < 0) a += 360; return a;
-}
-
-function applyClockAngle(a) {
+function applyClockDrag(angle,side){
   goManual();
-  const totalMin = Math.round((a / 360) * 720);
-  const h12 = Math.floor(totalMin / 60) % 12, m = totalMin % 60;
-  const newH = SL.H.val >= 12 ? h12 + 12 : h12;
-  SL.H.val = newH; SL.M.val = m;
-  SL.H.fill.style.width = (newH / 23 * 100) + '%'; SL.H.thumb.style.left = (newH / 23 * 100) + '%'; SL.H.val_el.textContent = pad(newH);
-  SL.M.fill.style.width = (m / 59 * 100) + '%'; SL.M.thumb.style.left = (m / 59 * 100) + '%'; SL.M.val_el.textContent = pad(m);
-  applyManual();
+  const tz=side==='L'?selL.value:selR.value;
+  const cur=tzParts(currentTs,tz);
+  const totalMin=Math.round((angle/360)*720);
+  const h12=Math.floor(totalMin/60)%12,m=totalMin%60;
+  const newH=cur.hour>=12?h12+12:h12;
+  const d=new Date(currentTs),p={};
+  new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
+    .formatToParts(d).forEach(({type,value})=>p[type]=parseInt(value));
+  const tzDelta=d.getTime()-Date.UTC(p.year,p.month-1,p.day,p.hour%24,p.minute,p.second);
+  currentTs=Date.UTC(p.year,p.month-1,p.day,newH,m,cur.second)+tzDelta;
+  render(null);
 }
-
-svgL.addEventListener('mousedown', e => { clockDragging = true; bgL.classList.add('ring'); applyClockAngle(clockAngle(e)); e.preventDefault(); });
-svgL.addEventListener('touchstart', e => { clockDragging = true; bgL.classList.add('ring'); applyClockAngle(clockAngle(e)); }, { passive: true });
-document.addEventListener('mousemove', e => { if (clockDragging) applyClockAngle(clockAngle(e)); });
-document.addEventListener('touchmove', e => { if (clockDragging) applyClockAngle(clockAngle(e)); }, { passive: true });
-document.addEventListener('mouseup', () => { clockDragging = false; bgL.classList.remove('ring'); });
-document.addEventListener('touchend', () => { clockDragging = false; bgL.classList.remove('ring'); });
+function attachClockDrag(svgId,bgId,side){
+  const svgEl=document.getElementById(svgId),bgEl=document.getElementById(bgId);
+  let dragging=false;
+  svgEl.addEventListener('mousedown',e=>{dragging=true;bgEl.classList.add('ring');applyClockDrag(getClockAngle(e,svgEl),side);e.preventDefault();});
+  svgEl.addEventListener('touchstart',e=>{dragging=true;bgEl.classList.add('ring');applyClockDrag(getClockAngle(e,svgEl),side);},{passive:true});
+  document.addEventListener('mousemove',e=>{if(dragging)applyClockDrag(getClockAngle(e,svgEl),side);});
+  document.addEventListener('touchmove',e=>{if(dragging)applyClockDrag(getClockAngle(e,svgEl),side);},{passive:true});
+  document.addEventListener('mouseup',()=>{dragging=false;bgEl.classList.remove('ring');});
+  document.addEventListener('touchend',()=>{dragging=false;bgEl.classList.remove('ring');});
+}
+attachClockDrag('svgL','bgL','L');
+attachClockDrag('svgR','bgR','R');
 </script>
 </body>
 </html>

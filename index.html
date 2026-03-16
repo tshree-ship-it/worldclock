@@ -47,19 +47,30 @@ svg.draggable{cursor:grab;touch-action:none;}
 svg.draggable:active{cursor:grabbing;}
 .hint{font-size:10px;color:var(--text3);margin-top:4px;}
 
-/* Wheels */
-.time-wheels{display:flex;align-items:flex-start;gap:3px;margin-top:.75rem;}
-.wheel-col{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.wheel-sep{font-size:18px;font-weight:400;color:var(--text2);margin-top:10px;}
-.wheel-label{font-size:9px;color:var(--text3);letter-spacing:.05em;}
-.wheel{width:46px;height:72px;overflow:hidden;position:relative;border:0.5px solid var(--border);border-radius:8px;background:var(--bg2);}
-.wheel-inner{position:absolute;left:0;right:0;top:0;}
-.wi{height:24px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text3);font-variant-numeric:tabular-nums;font-weight:400;}
-.wi.active{font-size:15px;font-weight:500;color:var(--text);}
-.wheel-fade-top,.wheel-fade-bot{position:absolute;left:0;right:0;height:24px;pointer-events:none;z-index:2;}
-.wheel-fade-top{top:0;background:linear-gradient(to bottom,var(--bg2) 30%,transparent);}
-.wheel-fade-bot{bottom:0;background:linear-gradient(to top,var(--bg2) 30%,transparent);}
-.wheel-highlight{position:absolute;left:4px;right:4px;top:24px;height:24px;border:1px solid var(--border2);border-radius:5px;pointer-events:none;z-index:1;}
+/* Time inputs */
+.time-inputs{display:flex;align-items:center;gap:3px;margin-top:.75rem;}
+.t-sep{font-size:18px;font-weight:400;color:var(--text2);line-height:1;}
+.t-col{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.t-label{font-size:9px;color:var(--text3);letter-spacing:.05em;}
+.t-input{
+  width:46px;height:40px;
+  background:var(--bg2);
+  border:0.5px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  font-family:inherit;
+  font-size:16px;
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+  outline:none;
+  -moz-appearance:textfield;
+  appearance:textfield;
+  padding:0;
+  cursor:ns-resize;
+}
+.t-input::-webkit-inner-spin-button,.t-input::-webkit-outer-spin-button{-webkit-appearance:none;}
+.t-input:focus{border-color:var(--blue);background:var(--bg);cursor:text;}
 
 .date-display{font-size:11px;color:var(--text2);margin-top:5px;}
 select{width:100%;margin-top:.85rem;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:7px 9px;font-size:12px;color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none;appearance:none;cursor:pointer;}
@@ -85,9 +96,10 @@ select{width:100%;margin-top:.85rem;background:var(--bg2);border:0.5px solid var
 <header><h1>World Clock</h1></header>
 <div class="container">
   <div class="clocks-row">
+
     <div class="clock-card">
       <div class="clock-label">Reference</div>
-      <svg id="svgL" class="face draggable" width="148" height="148" viewBox="0 0 160 160">
+      <svg id="svgL" class="face" width="148" height="148" viewBox="0 0 160 160">
         <circle class="bg" id="bgL" cx="80" cy="80" r="74"/>
         <g id="tL"></g>
         <line class="hour" id="hL" x1="80" y1="80" x2="80" y2="44"/>
@@ -96,19 +108,35 @@ select{width:100%;margin-top:.85rem;background:var(--bg2);border:0.5px solid var
         <circle class="dot" cx="80" cy="80" r="4"/>
         <circle class="dot-inner" cx="80" cy="80" r="2"/>
       </svg>
-      <div class="hint">drag to set time</div>
-      <div class="time-wheels" id="wheelsL"></div>
+      <div class="time-inputs">
+        <div class="t-col">
+          <input class="t-input" id="ihL" type="number" min="0" max="23" value="00" inputmode="numeric">
+          <div class="t-label">hr</div>
+        </div>
+        <div class="t-sep">:</div>
+        <div class="t-col">
+          <input class="t-input" id="imL" type="number" min="0" max="59" value="00" inputmode="numeric">
+          <div class="t-label">min</div>
+        </div>
+        <div class="t-sep">:</div>
+        <div class="t-col">
+          <input class="t-input" id="isL" type="number" min="0" max="59" value="00" inputmode="numeric">
+          <div class="t-label">sec</div>
+        </div>
+      </div>
       <div class="date-display" id="dateL"></div>
       <select id="selL"></select>
     </div>
+
     <div class="divider">
       <div class="diff-label">diff</div>
       <div class="diff-badge" id="diffBadge">—</div>
       <div class="arrow">&#8596;</div>
     </div>
+
     <div class="clock-card">
       <div class="clock-label">Target</div>
-      <svg id="svgR" class="face draggable" width="148" height="148" viewBox="0 0 160 160">
+      <svg id="svgR" class="face" width="148" height="148" viewBox="0 0 160 160">
         <circle class="bg" id="bgR" cx="80" cy="80" r="74"/>
         <g id="tR"></g>
         <line class="hour" id="hR" x1="80" y1="80" x2="80" y2="44"/>
@@ -117,11 +145,26 @@ select{width:100%;margin-top:.85rem;background:var(--bg2);border:0.5px solid var
         <circle class="dot" cx="80" cy="80" r="4"/>
         <circle class="dot-inner" cx="80" cy="80" r="2"/>
       </svg>
-      <div class="hint">drag to set time</div>
-      <div class="time-wheels" id="wheelsR"></div>
+      <div class="time-inputs">
+        <div class="t-col">
+          <input class="t-input" id="ihR" type="number" min="0" max="23" value="00" inputmode="numeric">
+          <div class="t-label">hr</div>
+        </div>
+        <div class="t-sep">:</div>
+        <div class="t-col">
+          <input class="t-input" id="imR" type="number" min="0" max="59" value="00" inputmode="numeric">
+          <div class="t-label">min</div>
+        </div>
+        <div class="t-sep">:</div>
+        <div class="t-col">
+          <input class="t-input" id="isR" type="number" min="0" max="59" value="00" inputmode="numeric">
+          <div class="t-label">sec</div>
+        </div>
+      </div>
       <div class="date-display" id="dateR"></div>
       <select id="selR"></select>
     </div>
+
   </div>
   <div style="display:flex;justify-content:center;">
     <div class="live-badge" id="livePill">
@@ -166,6 +209,7 @@ buildTicks('tL');buildTicks('tR');
 
 function rotate(id,deg){document.getElementById(id).setAttribute('transform',`rotate(${deg},80,80)`);}
 function pad(n){return String(n).padStart(2,'0');}
+
 function tzParts(ts,tz){
   const p={};
   new Intl.DateTimeFormat('en-US',{timeZone:tz,hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
@@ -194,123 +238,27 @@ function calcDiff(ts){
   return am===0?`${sign}${diff>=0?ah:-ah}h`:`${sign}${diff>=0?'':'-'}${ah}h ${am}m`;
 }
 
+const ihL=document.getElementById('ihL'),imL=document.getElementById('imL'),isL=document.getElementById('isL');
+const ihR=document.getElementById('ihR'),imR=document.getElementById('imR'),isR=document.getElementById('isR');
+
 let currentTs=Date.now(),isLive=true;
 
-// ---- Wheel engine ----
-const IH=24;
-const WS={};
+function clamp(v,min,max){return Math.max(min,Math.min(max,isNaN(v)?min:v));}
 
-function makeWheel(container,side,unit){
-  const max=unit==='H'?23:59;
-  const col=document.createElement('div');col.className='wheel-col';
-  if(container.children.length>0){
-    const sep=document.createElement('div');sep.className='wheel-sep';sep.textContent=':';container.appendChild(sep);
-  }
-  const wEl=document.createElement('div');wEl.className='wheel';
-  wEl.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
-  const inner=document.createElement('div');inner.className='wheel-inner';
-  const pad1=document.createElement('div');pad1.className='wi';inner.appendChild(pad1);
-  for(let v=0;v<=max;v++){
-    const el=document.createElement('div');el.className='wi';el.textContent=pad(v);inner.appendChild(el);
-  }
-  const pad2=document.createElement('div');pad2.className='wi';inner.appendChild(pad2);
-  const highlight=document.createElement('div');highlight.className='wheel-highlight';
-  const fadeT=document.createElement('div');fadeT.className='wheel-fade-top';
-  const fadeB=document.createElement('div');fadeB.className='wheel-fade-bot';
-  wEl.appendChild(inner);wEl.appendChild(highlight);wEl.appendChild(fadeT);wEl.appendChild(fadeB);
-  const lbl=document.createElement('div');lbl.className='wheel-label';
-  lbl.textContent=unit==='H'?'hr':unit==='M'?'min':'sec';
-  col.appendChild(wEl);col.appendChild(lbl);container.appendChild(col);
-  const key=side+unit;
-  WS[key]={el:wEl,inner,max,val:0,raw:0,side,unit};
-  attachWheelEvents(key);
+function syncInputs(side,h,m,s){
+  if(side==='L'){ihL.value=pad(h);imL.value=pad(m);isL.value=pad(s);}
+  else{ihR.value=pad(h);imR.value=pad(m);isR.value=pad(s);}
 }
 
-function buildWheels(containerId,side){
-  const c=document.getElementById(containerId);c.innerHTML='';
-  ['H','M','S'].forEach(unit=>makeWheel(c,side,unit));
-}
-
-function positionWheel(key,v,animate){
-  const w=WS[key];
-  v=Math.max(0,Math.min(w.max,v));
-  w.inner.style.transition=animate?'transform .18s cubic-bezier(.25,1,.5,1)':'none';
-  w.inner.style.transform=`translateY(${-v*IH}px)`;
-  Array.from(w.inner.children).forEach((el,i)=>el.classList.toggle('active',i===Math.round(v)+1));
-  w.val=Math.round(v);w.raw=v;
-}
-
-function snapWheel(key,v){
-  const rounded=Math.max(0,Math.min(WS[key].max,Math.round(v)));
-  positionWheel(key,rounded,true);
-  WS[key].val=rounded;
-  commitWheels(WS[key].side);
-}
-
-function commitWheels(side){
-  goManual();
-  const tz=side==='L'?selL.value:selR.value;
-  const d=new Date(currentTs),p={};
-  new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
-    .formatToParts(d).forEach(({type,value})=>p[type]=parseInt(value));
-  const tzDelta=d.getTime()-Date.UTC(p.year,p.month-1,p.day,p.hour%24,p.minute,p.second);
-  currentTs=Date.UTC(p.year,p.month-1,p.day,WS[side+'H'].val,WS[side+'M'].val,WS[side+'S'].val)+tzDelta;
-  render(side);
-}
-
-function attachWheelEvents(key){
-  const w=WS[key];
-  let startY=0,startRaw=0,lastY=0,vel=0,lastT=0,active=false,raf=null;
-  function getY(e){return(e.touches?e.touches[0]:e).clientY;}
-  function start(e){
-    active=true;
-    if(raf){cancelAnimationFrame(raf);raf=null;}
-    startY=lastY=getY(e);startRaw=w.raw;vel=0;lastT=Date.now();
-  }
-  function move(e){
-    if(!active)return;
-    const y=getY(e),now=Date.now(),dt=Math.max(now-lastT,1);
-    vel=(lastY-y)/dt;lastY=y;lastT=now;
-    positionWheel(key,Math.max(0,Math.min(w.max,startRaw+(startY-y)/IH)),false);
-  }
-  function end(){
-    if(!active)return;active=false;
-    const spd=vel*16;
-    if(Math.abs(spd)>0.5){
-      let v=w.raw,t0=Date.now();
-      function momentum(){
-        const elapsed=(Date.now()-t0)/16;
-        const decay=Math.pow(0.88,elapsed);
-        v=w.raw-(spd*(1-decay)/0.12);
-        v=Math.max(0,Math.min(w.max,v));
-        positionWheel(key,v,false);
-        if(Math.abs(spd)*decay>0.3)raf=requestAnimationFrame(momentum);
-        else snapWheel(key,v);
-      }
-      raf=requestAnimationFrame(momentum);
-    } else {
-      snapWheel(key,w.raw);
-    }
-  }
-  w.el.addEventListener('mousedown',e=>{start(e);e.preventDefault();});
-  w.el.addEventListener('touchstart',e=>{start(e);},{passive:false});
-  document.addEventListener('mousemove',move);
-  document.addEventListener('touchmove',e=>{if(active)move(e);},{passive:false});
-  document.addEventListener('mouseup',end);
-  document.addEventListener('touchend',end);
-  w.el.addEventListener('wheel',e=>{
-    e.preventDefault();
-    snapWheel(key,Math.max(0,Math.min(w.max,w.val+(e.deltaY>0?1:-1))));
-  },{passive:false});
-}
-
-buildWheels('wheelsL','L');
-buildWheels('wheelsR','R');
-
-function syncWheels(side,h,m,s){
-  positionWheel(side+'H',h,false);
-  positionWheel(side+'M',m,false);
-  positionWheel(side+'S',s,false);
+function render(skipSide){
+  const pL=tzParts(currentTs,selL.value),pR=tzParts(currentTs,selR.value);
+  setHands('L',pL.hour,pL.minute,pL.second);
+  setHands('R',pR.hour,pR.minute,pR.second);
+  if(skipSide!=='L')syncInputs('L',pL.hour,pL.minute,pL.second);
+  if(skipSide!=='R')syncInputs('R',pR.hour,pR.minute,pR.second);
+  document.getElementById('dateL').textContent=fmtDate(currentTs,selL.value);
+  document.getElementById('dateR').textContent=fmtDate(currentTs,selR.value);
+  document.getElementById('diffBadge').textContent=calcDiff(currentTs);
 }
 
 function goManual(){
@@ -319,21 +267,75 @@ function goManual(){
   document.getElementById('liveLabel').textContent='Paused';
 }
 
-function render(skipSide){
-  const pL=tzParts(currentTs,selL.value),pR=tzParts(currentTs,selR.value);
-  setHands('L',pL.hour,pL.minute,pL.second);
-  setHands('R',pR.hour,pR.minute,pR.second);
-  if(skipSide!=='L')syncWheels('L',pL.hour,pL.minute,pL.second);
-  if(skipSide!=='R')syncWheels('R',pR.hour,pR.minute,pR.second);
-  document.getElementById('dateL').textContent=fmtDate(currentTs,selL.value);
-  document.getElementById('dateR').textContent=fmtDate(currentTs,selR.value);
-  document.getElementById('diffBadge').textContent=calcDiff(currentTs);
+function applyInputs(side){
+  goManual();
+  const tz=side==='L'?selL.value:selR.value;
+  const h=side==='L'?clamp(parseInt(ihL.value),0,23):clamp(parseInt(ihR.value),0,23);
+  const m=side==='L'?clamp(parseInt(imL.value),0,59):clamp(parseInt(imR.value),0,59);
+  const s=side==='L'?clamp(parseInt(isL.value),0,59):clamp(parseInt(isR.value),0,59);
+  const d=new Date(currentTs),p={};
+  new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
+    .formatToParts(d).forEach(({type,value})=>p[type]=parseInt(value));
+  const tzDelta=d.getTime()-Date.UTC(p.year,p.month-1,p.day,p.hour%24,p.minute,p.second);
+  currentTs=Date.UTC(p.year,p.month-1,p.day,h,m,s)+tzDelta;
+  render(side);
 }
+
+function setupInput(el,side){
+  el.addEventListener('focus',()=>el.select());
+  el.addEventListener('input',()=>applyInputs(side));
+  el.addEventListener('blur',()=>{
+    const max=parseInt(el.max);
+    el.value=pad(clamp(parseInt(el.value),0,max));
+    applyInputs(side);
+  });
+  el.addEventListener('keydown',e=>{
+    const max=parseInt(el.max);
+    if(e.key==='ArrowUp'){e.preventDefault();el.value=pad(clamp((parseInt(el.value)||0)+1,0,max));applyInputs(side);}
+    if(e.key==='ArrowDown'){e.preventDefault();el.value=pad(clamp((parseInt(el.value)||0)-1,0,max));applyInputs(side);}
+    if(e.key>='0'&&e.key<='9'){
+      setTimeout(()=>{
+        if(String(el.value).replace(/^0/,''). length>=String(max).length){
+          const next=el.closest('.t-col').nextElementSibling?.nextElementSibling?.querySelector('input');
+          if(next)next.focus();
+        }
+      },10);
+    }
+  });
+// Mouse-wheel scroll
+el.addEventListener('wheel', e => {
+    e.preventDefault();
+    const max = parseInt(el.max);
+    const delta = e.deltaY > 0 ? -1 : 1;
+    el.value = pad(clamp((parseInt(el.value)||0) + delta, 0, max));
+    applyInputs(side);
+  }, { passive: false });
+
+  // Touch swipe up/down
+  let touchStartY = 0, touchStartVal = 0;
+  el.addEventListener('touchstart', e => {
+    touchStartY = e.touches[0].clientY;
+    touchStartVal = parseInt(el.value) || 0;
+  }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    e.preventDefault();
+    const max = parseInt(el.max);
+    const diff = Math.round((touchStartY - e.touches[0].clientY) / 12);
+    el.value = pad(clamp(touchStartVal + diff, 0, max));
+    applyInputs(side);
+  }, { passive: false });
+}
+
+setupInput(ihL,'L'); setupInput(imL,'L'); setupInput(isL,'L');
+setupInput(ihR,'R'); setupInput(imR,'R'); setupInput(isR,'R');
+
 
 function tick(){if(isLive){currentTs=Date.now();}render(null);setTimeout(tick,1000);}
 tick();
+
 selL.addEventListener('change',()=>render(null));
 selR.addEventListener('change',()=>render(null));
+
 document.getElementById('livePill').addEventListener('click',()=>{
   isLive=!isLive;
   document.getElementById('liveDot').className='live-dot'+(isLive?'':' off');
@@ -341,41 +343,7 @@ document.getElementById('livePill').addEventListener('click',()=>{
   if(isLive){currentTs=Date.now();render(null);}
 });
 
-// ---- Clock drag ----
-function getClockAngle(e,svgEl){
-  const r=svgEl.getBoundingClientRect();
-  const cx=r.left+r.width/2,cy=r.top+r.height/2;
-  const ex=(e.touches?e.touches[0]:e).clientX;
-  const ey=(e.touches?e.touches[0]:e).clientY;
-  let a=Math.atan2(ey-cy,ex-cx)*180/Math.PI+90;
-  if(a<0)a+=360;return a;
-}
-function applyClockDrag(angle,side){
-  goManual();
-  const tz=side==='L'?selL.value:selR.value;
-  const cur=tzParts(currentTs,tz);
-  const totalMin=Math.round((angle/360)*720);
-  const h12=Math.floor(totalMin/60)%12,m=totalMin%60;
-  const newH=cur.hour>=12?h12+12:h12;
-  const d=new Date(currentTs),p={};
-  new Intl.DateTimeFormat('en-US',{timeZone:tz,year:'numeric',month:'numeric',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
-    .formatToParts(d).forEach(({type,value})=>p[type]=parseInt(value));
-  const tzDelta=d.getTime()-Date.UTC(p.year,p.month-1,p.day,p.hour%24,p.minute,p.second);
-  currentTs=Date.UTC(p.year,p.month-1,p.day,newH,m,cur.second)+tzDelta;
-  render(null);
-}
-function attachClockDrag(svgId,bgId,side){
-  const svgEl=document.getElementById(svgId),bgEl=document.getElementById(bgId);
-  let dragging=false;
-  svgEl.addEventListener('mousedown',e=>{dragging=true;bgEl.classList.add('ring');applyClockDrag(getClockAngle(e,svgEl),side);e.preventDefault();});
-  svgEl.addEventListener('touchstart',e=>{dragging=true;bgEl.classList.add('ring');applyClockDrag(getClockAngle(e,svgEl),side);},{passive:true});
-  document.addEventListener('mousemove',e=>{if(dragging)applyClockDrag(getClockAngle(e,svgEl),side);});
-  document.addEventListener('touchmove',e=>{if(dragging)applyClockDrag(getClockAngle(e,svgEl),side);},{passive:true});
-  document.addEventListener('mouseup',()=>{dragging=false;bgEl.classList.remove('ring');});
-  document.addEventListener('touchend',()=>{dragging=false;bgEl.classList.remove('ring');});
-}
-attachClockDrag('svgL','bgL','L');
-attachClockDrag('svgR','bgR','R');
+
 </script>
 </body>
 </html>
